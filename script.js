@@ -1,64 +1,85 @@
-const resetBtn = document.querySelector('#reset');
-const playBtn = document.querySelector('#play');
-const timerEl = document.querySelector('#timer');
-const root = document.querySelector(':root');
+const resetBtn = document.querySelector("#reset");
+const playBtn = document.querySelector("#play");
+const timerEl = document.querySelector("#timer");
+const root = document.querySelector(":root");
+const increaseBtn = document.querySelector("#increaseTime");
+const decreaseBtn = document.querySelector("#decreaseTime");
+const startTimeEl = document.querySelector("#startTime");
 
-// Initial setup
-const totalSeconds = 60;
-let playing = false;
+let startMinutes = 1;
+let totalSeconds = startMinutes * 60;
 let currentSeconds = totalSeconds;
+let playing = false;
+let timerInterval = null;
+
 timerEl.innerText = formatTime(totalSeconds);
 
-const timerInterval = setInterval(run, 1000);
-
-playBtn.addEventListener('click', () => {
+playBtn.addEventListener("click", () => {
   playing = !playing;
-  playBtn.classList.toggle('play');
-  playBtn.classList.toggle('bg-green-500'); // Toggle the color class
-  const playIcon = playBtn.querySelector('i');
-  playIcon.classList.toggle('fa-play'); // Toggle the play icon
-  playIcon.classList.toggle('fa-pause'); // Toggle the pause icon
-});
-resetBtn.addEventListener('click', resetAll);
+  playBtn.classList.toggle("play");
+  playBtn.classList.toggle("bg-green-500");
+  const playIcon = playBtn.querySelector("i");
+  playIcon.classList.toggle("fa-play");
+  playIcon.classList.toggle("fa-pause");
 
-// Run the timer
+  if (playing) {
+    timerInterval = setInterval(run, 1000);
+  } else {
+    clearInterval(timerInterval);
+  }
+});
+
+resetBtn.addEventListener("click", resetAll);
+
+increaseBtn.addEventListener("click", () => {
+  if (!playing) {
+    startMinutes++;
+    startTimeEl.innerText = startMinutes;
+    resetAll();
+  }
+});
+
+decreaseBtn.addEventListener("click", () => {
+  if (!playing && startMinutes > 1) {
+    startMinutes--;
+    startTimeEl.innerText = startMinutes;
+    resetAll();
+  }
+});
+
 function run() {
   if (playing) {
-    currentSeconds -= 1;
+    currentSeconds--;
     if (currentSeconds <= 0) {
       clearInterval(timerInterval);
       resetAll();
     }
 
     timerEl.innerText = formatTime(currentSeconds);
-    root.style.setProperty('--degrees', calcDeg());
+    root.style.setProperty("--degrees", calcDeg());
   }
 }
 
-// Format the time
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const newSeconds = seconds % 60;
-
-  return `${minutes.toString().padStart(2, '0')}:${newSeconds
-    .toString()
-    .padStart(2, '0')}`;
+  return `${minutes.toString().padStart(2, "0")}:${newSeconds.toString().padStart(2, "0")}`;
 }
 
-// Calculate the degrees
 function calcDeg() {
   return `${360 - (currentSeconds / totalSeconds) * 360}deg`;
 }
 
-// Reset all the values
 function resetAll() {
   playing = false;
-  playBtn.classList.remove('play');
-  playBtn.classList.remove('bg-green-500'); // Remove the color class
-  const playIcon = playBtn.querySelector('i');
-  playIcon.classList.remove('fa-pause'); // Remove the pause icon
-  playIcon.classList.add('fa-play'); // Add the play icon
+  clearInterval(timerInterval);
+  playBtn.classList.remove("play", "bg-green-500");
+  const playIcon = playBtn.querySelector("i");
+  playIcon.classList.remove("fa-pause");
+  playIcon.classList.add("fa-play");
+
+  totalSeconds = startMinutes * 60;
   currentSeconds = totalSeconds;
   timerEl.innerText = formatTime(totalSeconds);
-  root.style.setProperty('--degrees', '0deg');
+  root.style.setProperty("--degrees", "0deg");
 }
